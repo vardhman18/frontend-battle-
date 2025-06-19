@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const spin3d = {
   animation: 'spin3d 8s linear infinite',
@@ -21,7 +21,8 @@ const face = (transform, gradient) => ({
   transform,
 });
 
-const Hero = () => {
+// Reusable Ripple Button
+const RippleButton = ({ children, className, ...props }) => {
   const [ripples, setRipples] = useState([]);
 
   const createRipple = (event) => {
@@ -31,17 +32,104 @@ const Hero = () => {
     const x = event.clientX - rect.left - size / 2;
     const y = event.clientY - rect.top - size / 2;
 
-    const newRipple = { x, y, size, id: Date.now() };
-    setRipples(prev => [...prev, newRipple]);
+    const newRipple = { x, y, size, id: Date.now() + Math.random() };
+    setRipples((prev) => [...prev, newRipple]);
 
     setTimeout(() => {
-      setRipples(prev => prev.filter(ripple => ripple.id !== newRipple.id));
+      setRipples((prev) => prev.filter((ripple) => ripple.id !== newRipple.id));
     }, 600);
   };
 
   return (
+    <button
+      {...props}
+      onClick={(e) => {
+        createRipple(e);
+        if (props.onClick) props.onClick(e);
+      }}
+      className={`relative overflow-hidden ${className}`}
+    >
+      {ripples.map((ripple) => (
+        <span
+          key={ripple.id}
+          className="absolute bg-white opacity-30 rounded-full pointer-events-none"
+          style={{
+            left: ripple.x,
+            top: ripple.y,
+            width: ripple.size,
+            height: ripple.size,
+            animation: 'ripple-animation 0.6s linear',
+          }}
+        />
+      ))}
+      {children}
+      <style>
+        {`
+        @keyframes ripple-animation {
+          to {
+            transform: scale(2.5);
+            opacity: 0;
+          }
+        }
+        `}
+      </style>
+    </button>
+  );
+};
+
+const Hero = () => {
+  const [pageRipples, setPageRipples] = useState([]);
+
+  useEffect(() => {
+    const handlePageClick = (e) => {
+      // Prevent ripple on buttons (optional)
+      if (e.target.closest('button')) return;
+
+      const size = 200;
+      const x = e.clientX - size / 2;
+      const y = e.clientY - size / 2;
+      const id = Date.now() + Math.random();
+
+      setPageRipples((prev) => [...prev, { x, y, size, id }]);
+      setTimeout(() => {
+        setPageRipples((prev) => prev.filter((r) => r.id !== id));
+      }, 600);
+    };
+
+    window.addEventListener('click', handlePageClick);
+    return () => window.removeEventListener('click', handlePageClick);
+  }, []);
+
+  return (
     <section id="home" className="min-h-screen relative overflow-hidden bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       <style>{keyframes}</style>
+      {/* Page-wide ripples */}
+      <div className="pointer-events-none fixed inset-0 z-50">
+        {pageRipples.map((ripple) => (
+          <span
+            key={ripple.id}
+            className="absolute bg-white opacity-20 rounded-full"
+            style={{
+              left: ripple.x,
+              top: ripple.y,
+              width: ripple.size,
+              height: ripple.size,
+              animation: 'ripple-animation 0.6s linear',
+              pointerEvents: 'none',
+            }}
+          />
+        ))}
+        <style>
+          {`
+          @keyframes ripple-animation {
+            to {
+              transform: scale(2.5);
+              opacity: 0;
+            }
+          }
+          `}
+        </style>
+      </div>
       {/* Animated Background */}
       <div className="absolute inset-0">
         <div className="absolute top-10 left-10 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
@@ -62,27 +150,14 @@ const Hero = () => {
               We craft exceptional digital experiences that drive results and inspire audiences worldwide.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <button
-                onClick={createRipple}
-                className="relative overflow-hidden px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transform hover:scale-105 transition-all duration-300"
+              <RippleButton
+                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-semibold hover:from-purple-700 hover:to-pink-700 transform hover:scale-105 transition-all duration-300"
               >
-                {ripples.map((ripple) => (
-                  <span
-                    key={ripple.id}
-                    className="absolute bg-white opacity-30 rounded-full animate-ping"
-                    style={{
-                      left: ripple.x,
-                      top: ripple.y,
-                      width: ripple.size,
-                      height: ripple.size,
-                    }}
-                  />
-                ))}
                 Get Started
-              </button>
-              <button className="px-8 py-4 border-2 border-white text-white rounded-full font-semibold hover:bg-white hover:text-purple-900 transition-all duration-300">
+              </RippleButton>
+              <RippleButton className="px-8 py-4 border-2 border-white text-white rounded-full font-semibold hover:bg-white hover:text-purple-900 transition-all duration-300">
                 View Our Work
-              </button>
+              </RippleButton>
             </div>
           </div>
 
