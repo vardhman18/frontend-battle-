@@ -6,7 +6,7 @@
 
 ## 📌 Live Demo
 
-👉 [Visit Live Site]
+👉 [Visit Live Site] https://frontend-battle-two.vercel.app/
 
 ---
 
@@ -65,7 +65,7 @@ pixelcraft/
 ### 1. Clone the Repository
 
 
-git clone https://github.com/your-username/pixelcraft.git
+git clone https://github.com/vardhman18/frontend-battle-.git
 cd pixelcraft
 ### 2. Install Dependencies
 
